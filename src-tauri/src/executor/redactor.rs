@@ -9,7 +9,7 @@ fn key_value_regex() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| {
         Regex::new(
-            r#"(?i)\b(password|passwd|pwd|secret|token|api[_-]?key|access[_-]?key|auth[_-]?token)\b(\s*[:=]\s*)(?:"[^"]*"|'[^']*'|\S+)"#,
+            r#"(?i)([A-Za-z0-9_.-]*(?:password|passwd|pwd|secret|token|api[_-]?key|access[_-]?key|auth[_-]?token))(\s*[:=]\s*)(?:"[^"]*"|'[^']*'|\S+)"#,
         )
         .expect("valid key-value redaction regex")
     })
@@ -26,7 +26,7 @@ fn bearer_regex() -> &'static Regex {
 fn url_credentials_regex() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| {
-        Regex::new(r"(https?://)([^:\s/@]+):([^@\s/]+)@")
+        Regex::new(r"(https?://)([^:\s/@]+):([^\s/]+)@")
             .expect("valid URL credentials redaction regex")
     })
 }

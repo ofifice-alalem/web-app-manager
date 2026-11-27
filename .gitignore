@@ -4,3 +4,5 @@ src-tauri/target/
 src-tauri/gen/
 .DS_Store
 Thumbs.db
+src-tauri/icons/
+resources/icons/app-icon.png
