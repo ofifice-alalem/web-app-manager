@@ -10,7 +10,8 @@
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "deploy:win": "powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1"
   },
   "dependencies": {
     "@fontsource/tajawal": "^5.3.0",

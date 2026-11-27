@@ -24,7 +24,7 @@ It hosts a single pre-configured web application inside an embedded WebView, ver
 - **Visual Studio 2022 Build Tools** (Desktop development with C++ / `VCTools`)
 - **Microsoft Edge WebView2 Runtime** (pre-installed on Windows 11; bundled bootstrapper configured for Windows 10)
 
-### Linux — Ubuntu 24.04 LTS (x86_64)
+### Linux — Linux Mint (Ubuntu 24.04 LTS base, x86_64)
 ```bash
 sudo apt-get update && sudo apt-get install -y \
   build-essential curl wget file libssl-dev \
@@ -78,12 +78,17 @@ Files:
 
 ---
 
-## Production Build
+## Production Build & Deploy (`deploay/`)
 
-```bash
-# Build native installers for the current platform
-npm run tauri build
+```powershell
+# Windows: builds both Seller & Settings apps into deploay/windows/
+npm run deploy:win
 ```
 
-- **Windows:** Generates NSIS (`.exe`) and MSI (`.msi`) installers under `src-tauri/target/release/bundle/`.
-- **Ubuntu 24.04 LTS (x86_64):** Generates `.deb` and `AppImage` packages under `src-tauri/target/release/bundle/`.
+```bash
+# Linux Mint: builds both Seller & Settings apps (.deb & .AppImage) into deploay/linux/
+bash scripts/build-linux.sh
+```
+
+- **Windows (`deploay/windows/`):** NSIS installers (`-setup.exe`) and standalone `.exe` binaries for both apps.
+- **Linux Mint (`deploay/linux/`):** `.deb` and `.AppImage` packages for both apps.

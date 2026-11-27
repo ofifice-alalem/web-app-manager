@@ -26,13 +26,18 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": ["nsis", "deb", "appimage"],
     "icon": [
       "icons/icon.ico"
     ],
     "windows": {
       "webviewInstallMode": {
         "type": "embedBootstrapper"
+      }
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"]
       }
     }
   }
