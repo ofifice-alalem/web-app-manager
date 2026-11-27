@@ -1,8 +1,10 @@
 //! Tauri WebView window lifecycle and navigation control.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
-use tauri::webview::NewWindowResponse;
+use tauri::webview::{NewWindowResponse, PageLoadEvent};
+use tokio::sync::Notify;
 
 use super::policy::{BrowserError, NavigationPolicy};
 
@@ -21,6 +23,8 @@ impl BrowserController {
     pub fn create_main_window(
         app: &AppHandle,
         policy: Arc<RwLock<NavigationPolicy>>,
+        error_notify: Arc<Notify>,
+        showing_shell: Arc<AtomicBool>,
     ) -> Result<WebviewWindow, BrowserError> {
         let nav_policy = Arc::clone(&policy);
         let new_window_policy = Arc::clone(&policy);
@@ -35,6 +39,24 @@ impl BrowserController {
             .on_navigation(move |url| match nav_policy.read() {
                 Ok(guard) => guard.is_navigation_allowed(url),
                 Err(_) => false,
+            })
+            .on_page_load(move |window, payload| {
+                if payload.url().scheme() == "chrome-error" {
+                    let _ = payload.event() == PageLoadEvent::Started
+                        || payload.event() == PageLoadEvent::Finished;
+                    showing_shell.store(true, Ordering::SeqCst);
+                    let shell_url = if cfg!(debug_assertions) {
+                        "http://localhost:1420/index.html"
+                    } else if cfg!(target_os = "windows") {
+                        "http://tauri.localhost/index.html"
+                    } else {
+                        "tauri://localhost/index.html"
+                    };
+                    if let Ok(parsed) = tauri::Url::parse(shell_url) {
+                        let _ = window.navigate(parsed);
+                    }
+                    error_notify.notify_one();
+                }
             })
             .on_new_window(move |url, _features| {
                 // Keep allowed links inside the main WebView instead of spawning an external browser.
@@ -79,6 +101,24 @@ impl BrowserController {
         let window = Self::get_main_window(app)?;
         window
             .reload()
+            .map_err(|err| BrowserError::WebViewOperation(err.to_string()))
+    }
+
+    /// Navigates the main WebView back to the local shell UI (`index.html`)
+    /// so loading/recovering/error overlays are shown instead of browser error pages.
+    pub fn show_shell_view(app: &AppHandle) -> Result<(), BrowserError> {
+        let window = Self::get_main_window(app)?;
+        let shell_url = if cfg!(debug_assertions) {
+            "http://localhost:1420/index.html"
+        } else if cfg!(target_os = "windows") {
+            "http://tauri.localhost/index.html"
+        } else {
+            "tauri://localhost/index.html"
+        };
+        let parsed = tauri::Url::parse(shell_url)
+            .map_err(|err| BrowserError::WebViewOperation(err.to_string()))?;
+        window
+            .navigate(parsed)
             .map_err(|err| BrowserError::WebViewOperation(err.to_string()))
     }
 

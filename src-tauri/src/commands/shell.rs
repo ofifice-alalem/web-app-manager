@@ -33,7 +33,7 @@ impl Default for ShellStatusDto {
     fn default() -> Self {
         Self {
             phase: ShellPhase::Checking,
-            message: "Checking application readiness...".to_string(),
+            message: "جارٍ التحقق من جاهزية المنظومة...".to_string(),
             target_url: None,
         }
     }
@@ -103,7 +103,7 @@ pub fn retry_shell_connection(
         &state,
         ShellStatusDto {
             phase: ShellPhase::Checking,
-            message: "Checking application readiness...".to_string(),
+            message: "جارٍ التحقق من جاهزية المنظومة...".to_string(),
             target_url: current.target_url,
         },
     )?;

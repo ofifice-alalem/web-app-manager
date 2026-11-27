@@ -338,6 +338,63 @@ fn load_event_executions(
         .map_err(|e| format!("Failed to map execution rows: {e}"))
 }
 
+#[tauri::command]
+fn run_perfumes_containers(action: String) -> Result<String, String> {
+    if action != "start" && action != "stop" {
+        return Err("Unsupported action; expected 'start' or 'stop'".to_string());
+    }
+
+    let docker_exe = if cfg!(target_os = "windows") {
+        "docker.exe"
+    } else {
+        "docker"
+    };
+
+    let containers = ["perfumes_app", "perfumes_db"];
+    let mut outputs = Vec::new();
+
+    for container in containers {
+        let mut cmd = std::process::Command::new(docker_exe);
+        cmd.args([action.as_str(), container]);
+
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(0x0800_0000);
+        }
+
+        let output = cmd
+            .output()
+            .map_err(|e| format!("فشل تشغيل {docker_exe} {action} {container}: {e}"))?;
+
+        if !output.status.success() {
+            let err_text = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            return Err(format!(
+                "فشل {action} للحاوية {container}: {}",
+                if err_text.is_empty() {
+                    format!("exit code {:?}", output.status.code())
+                } else {
+                    err_text
+                }
+            ));
+        }
+
+        let ok_text = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        outputs.push(if ok_text.is_empty() {
+            container.to_string()
+        } else {
+            ok_text
+        });
+    }
+
+    let label = if action == "start" {
+        "تم تشغيل"
+    } else {
+        "تم إيقاف"
+    };
+    Ok(format!("{label}: {}", outputs.join("، ")))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -345,7 +402,8 @@ pub fn run() {
             load_settings_bundle,
             save_config_file,
             load_recent_logs,
-            load_event_executions
+            load_event_executions,
+            run_perfumes_containers
         ])
         .run(tauri::generate_context!())
         .expect("error while running Desktop Host Settings");

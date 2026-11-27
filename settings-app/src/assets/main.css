@@ -1,1 +1,12 @@
 @import "tailwindcss";
+@import "@fontsource/tajawal/400.css";
+@import "@fontsource/tajawal/500.css";
+@import "@fontsource/tajawal/700.css";
+@import "@fontsource/tajawal/800.css";
+
+@layer base {
+  html,
+  body {
+    font-family: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+  }
+}

@@ -1,1 +1,25 @@
 @import "tailwindcss";
+@import "@fontsource/tajawal/400.css";
+@import "@fontsource/tajawal/500.css";
+@import "@fontsource/tajawal/700.css";
+@import "@fontsource/tajawal/800.css";
+
+@layer base {
+  html,
+  body {
+    font-family: "Tajawal", "Segoe UI", Tahoma, sans-serif;
+  }
+}
+
+@keyframes steam-progress {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-200%);
+  }
+}
+
+.animate-steam-progress {
+  animation: steam-progress 1.4s ease-in-out infinite;
+}

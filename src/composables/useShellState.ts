@@ -4,12 +4,12 @@ import { shellBridge } from '../services/shellBridge';
 import type { ShellStatus } from '../types/shell';
 
 const GENERIC_UNAVAILABLE_MESSAGE =
-  'The application could not be reached. Please verify the system is available and try again.';
+  'تعذر تشغيل المنظومة أو الوصول إليها حالياً. يرجى التحقق من جاهزية النظام ثم المحاولة مرة أخرى.';
 
 export function useShellState() {
   const status = ref<ShellStatus>({
     phase: 'checking',
-    message: 'Preparing application...',
+    message: 'جارٍ التحقق من جاهزية المنظومة...',
     targetUrl: null,
   });
 

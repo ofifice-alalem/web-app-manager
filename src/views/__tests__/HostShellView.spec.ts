@@ -49,7 +49,7 @@ describe('HostShellView', () => {
     await flushPromises();
 
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain('Application Unavailable');
+    expect(wrapper.text()).toContain('عذراً!');
     expect(wrapper.text()).toContain('Application could not be reached.');
 
     await wrapper.find('button').trigger('click');
