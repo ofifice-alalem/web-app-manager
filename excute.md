@@ -1,4 +1,4 @@
-**TARGET IMPLEMENTATION PLAN FILE: `implementation-plan/02-configuration-manager-and-schemas.md`**
+**TARGET IMPLEMENTATION PLAN FILE: `implementation-plan/03-command-executor.md`**
 
 Act as a Senior Software Architect and Senior Software Engineer. Your responsibility is to implement the selected project phase using professional software engineering practices, production-grade standards, and maintainable architecture.
 
