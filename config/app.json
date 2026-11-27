@@ -1,0 +1,9 @@
+{
+  "application": {
+    "id": "sales-system",
+    "name": "Sales System",
+    "url": "http://127.0.0.1:8000",
+    "startup_timeout_seconds": 60,
+    "reload_after_recovery": true
+  }
+}

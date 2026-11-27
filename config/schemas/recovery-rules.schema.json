@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Desktop Application Host - recovery-rules.json",
+  "type": "object",
+  "required": ["rules"],
+  "additionalProperties": false,
+  "properties": {
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "enabled", "trigger", "actions", "retry", "cooldown_seconds"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "enabled": { "type": "boolean" },
+          "trigger": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["type", "service_id", "status_codes"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": { "const": "http_status" },
+                  "service_id": { "type": "string", "minLength": 1 },
+                  "status_codes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "integer", "minimum": 100, "maximum": 599 }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["type", "service_id"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": { "const": "connection_refused" },
+                  "service_id": { "type": "string", "minLength": 1 }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["type", "service_id", "value"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": { "const": "service_status" },
+                  "service_id": { "type": "string", "minLength": 1 },
+                  "value": { "type": "string", "enum": ["stopped", "unhealthy", "timeout"] }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["type", "service_id"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": { "const": "tcp_unavailable" },
+                  "service_id": { "type": "string", "minLength": 1 }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["type", "service_id"],
+                "additionalProperties": false,
+                "properties": {
+                  "type": { "const": "process_not_running" },
+                  "service_id": { "type": "string", "minLength": 1 }
+                }
+              }
+            ]
+          },
+          "actions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "required": ["type", "timeout_seconds", "continue_on_failure"],
+                  "properties": {
+                    "type": { "const": "command" },
+                    "executable": { "type": "string", "minLength": 1 },
+                    "args": { "type": "array", "items": { "type": "string" } },
+                    "working_dir": { "type": ["string", "null"] },
+                    "platform_commands": { "type": "object" },
+                    "timeout_seconds": { "type": "integer", "minimum": 1 },
+                    "continue_on_failure": { "type": "boolean" }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": ["type", "service_id", "timeout_seconds"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": { "enum": ["start_service", "restart_service"] },
+                    "service_id": { "type": "string", "minLength": 1 },
+                    "timeout_seconds": { "type": "integer", "minimum": 1 },
+                    "continue_on_failure": { "type": "boolean", "default": false }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": ["type", "seconds"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": { "const": "wait" },
+                    "seconds": { "type": "integer", "minimum": 1 }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": ["type", "service_id", "timeout_seconds"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": { "const": "check_service" },
+                    "service_id": { "type": "string", "minLength": 1 },
+                    "timeout_seconds": { "type": "integer", "minimum": 1 }
+                  }
+                },
+                {
+                  "type": "object",
+                  "required": ["type", "enabled"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": { "const": "reload_application" },
+                    "enabled": { "type": "boolean" }
+                  }
+                }
+              ]
+            }
+          },
+          "retry": {
+            "type": "object",
+            "required": ["max_attempts", "delay_seconds"],
+            "additionalProperties": false,
+            "properties": {
+              "max_attempts": { "type": "integer", "minimum": 1 },
+              "delay_seconds": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "cooldown_seconds": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

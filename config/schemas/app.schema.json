@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Desktop Application Host - app.json",
+  "type": "object",
+  "required": ["application"],
+  "additionalProperties": false,
+  "properties": {
+    "application": {
+      "type": "object",
+      "required": ["id", "name", "url", "startup_timeout_seconds", "reload_after_recovery"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9-_]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "startup_timeout_seconds": { "type": "integer", "minimum": 1 },
+        "reload_after_recovery": { "type": "boolean" }
+      }
+    }
+  }
+}

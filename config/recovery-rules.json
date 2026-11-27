@@ -1,0 +1,40 @@
+{
+  "rules": [
+    {
+      "id": "sales-container-stopped",
+      "name": "Sales Container Stopped",
+      "enabled": true,
+      "trigger": {
+        "type": "service_status",
+        "service_id": "sales-app",
+        "value": "stopped"
+      },
+      "actions": [
+        {
+          "type": "restart_service",
+          "service_id": "sales-app",
+          "timeout_seconds": 45,
+          "continue_on_failure": false
+        },
+        {
+          "type": "wait",
+          "seconds": 3
+        },
+        {
+          "type": "check_service",
+          "service_id": "sales-app",
+          "timeout_seconds": 30
+        },
+        {
+          "type": "reload_application",
+          "enabled": true
+        }
+      ],
+      "retry": {
+        "max_attempts": 3,
+        "delay_seconds": 5
+      },
+      "cooldown_seconds": 60
+    }
+  ]
+}

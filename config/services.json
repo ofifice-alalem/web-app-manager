@@ -1,0 +1,75 @@
+{
+  "services": [
+    {
+      "id": "sales-app",
+      "name": "Sales Application",
+      "required": true,
+      "check": {
+        "type": "http",
+        "url": "http://127.0.0.1:8000",
+        "expected_status": [200, 301, 302],
+        "timeout_seconds": 5
+      },
+      "commands": {
+        "start": {
+          "platform_commands": {
+            "windows": {
+              "executable": "docker.exe",
+              "args": ["compose", "up", "-d"],
+              "timeout_seconds": 60
+            },
+            "linux": {
+              "executable": "docker",
+              "args": ["compose", "up", "-d"],
+              "timeout_seconds": 60
+            }
+          }
+        },
+        "stop": {
+          "platform_commands": {
+            "windows": {
+              "executable": "docker.exe",
+              "args": ["compose", "stop", "app"],
+              "timeout_seconds": 30
+            },
+            "linux": {
+              "executable": "docker",
+              "args": ["compose", "stop", "app"],
+              "timeout_seconds": 30
+            }
+          }
+        },
+        "restart": {
+          "platform_commands": {
+            "windows": {
+              "executable": "docker.exe",
+              "args": ["compose", "restart", "app"],
+              "timeout_seconds": 45
+            },
+            "linux": {
+              "executable": "docker",
+              "args": ["compose", "restart", "app"],
+              "timeout_seconds": 45
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "print-server",
+      "name": "Print Server",
+      "required": true,
+      "check": {
+        "type": "http",
+        "url": "http://127.0.0.1:9124/health",
+        "expected_status": [200],
+        "timeout_seconds": 5
+      },
+      "commands": {
+        "start": null,
+        "stop": null,
+        "restart": null
+      }
+    }
+  ]
+}
