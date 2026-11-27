@@ -76,7 +76,17 @@ fn is_process_running(target: &str) -> bool {
         }
         #[cfg(not(windows))]
         {
-            name == target_lower
+            if name == target_lower {
+                return true;
+            }
+            if let Some(exe_path) = proc_info.exe() {
+                if let Some(file_name) = exe_path.file_name() {
+                    if file_name.to_string_lossy().to_ascii_lowercase() == target_lower {
+                        return true;
+                    }
+                }
+            }
+            false
         }
     })
 }
