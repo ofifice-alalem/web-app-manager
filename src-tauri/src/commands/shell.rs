@@ -1,8 +1,9 @@
 //! Tauri IPC commands and shared shell state for the minimal client UI.
 
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, State};
+use tokio::sync::Notify;
 
 use crate::browser::BrowserController;
 
@@ -14,6 +15,7 @@ pub const SHELL_STATUS_EVENT: &str = "shell-status-changed";
 pub enum ShellPhase {
     Checking,
     Ready,
+    Recovering,
     Unavailable,
 }
 
@@ -65,6 +67,17 @@ impl ShellStateManager {
     }
 }
 
+/// Updates `ShellStateManager` and emits the status event to the frontend.
+pub fn publish_shell_status(
+    app: &AppHandle,
+    state: &ShellStateManager,
+    next: ShellStatusDto,
+) -> Result<ShellStatusDto, String> {
+    let updated = state.set_status(next)?;
+    let _ = app.emit(SHELL_STATUS_EVENT, &updated);
+    Ok(updated)
+}
+
 /// Returns the current shell readiness status to the Vue frontend.
 #[tauri::command]
 pub fn get_shell_status(state: State<'_, ShellStateManager>) -> Result<ShellStatusDto, String> {
@@ -77,20 +90,25 @@ pub fn reload_shell_webview(app: AppHandle) -> Result<(), String> {
     BrowserController::reload_webview(&app).map_err(|err| err.to_string())
 }
 
-/// Transitions the shell back to checking state when the user requests a retry.
+/// Transitions the shell back to checking state and wakes the lifecycle coordinator.
 #[tauri::command]
 pub fn retry_shell_connection(
     app: AppHandle,
     state: State<'_, ShellStateManager>,
+    retry_notify: State<'_, Arc<Notify>>,
 ) -> Result<ShellStatusDto, String> {
     let current = state.get_status()?;
-    let updated = state.set_status(ShellStatusDto {
-        phase: ShellPhase::Checking,
-        message: "Checking application readiness...".to_string(),
-        target_url: current.target_url,
-    })?;
+    let updated = publish_shell_status(
+        &app,
+        &state,
+        ShellStatusDto {
+            phase: ShellPhase::Checking,
+            message: "Checking application readiness...".to_string(),
+            target_url: current.target_url,
+        },
+    )?;
 
-    let _ = app.emit(SHELL_STATUS_EVENT, &updated);
+    retry_notify.notify_one();
     Ok(updated)
 }
 

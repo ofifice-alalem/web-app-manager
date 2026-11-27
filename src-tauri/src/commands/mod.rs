@@ -3,6 +3,6 @@
 pub mod shell;
 
 pub use shell::{
-    get_shell_status, reload_shell_webview, retry_shell_connection,
+    get_shell_status, publish_shell_status, reload_shell_webview, retry_shell_connection,
     ShellPhase, ShellStateManager, ShellStatusDto,
 };

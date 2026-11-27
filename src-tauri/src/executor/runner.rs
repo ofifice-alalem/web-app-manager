@@ -305,6 +305,10 @@ struct WindowsJobObject {
     handle: windows_sys::Win32::Foundation::HANDLE,
 }
 
+// Win32 kernel Job Object handles are safe to transfer across threads and close from any thread.
+#[cfg(windows)]
+unsafe impl Send for WindowsJobObject {}
+
 #[cfg(windows)]
 impl WindowsJobObject {
     fn attach_to_child(child: &Child) -> Option<Self> {

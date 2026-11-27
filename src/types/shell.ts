@@ -1,4 +1,4 @@
-export type ShellPhase = 'checking' | 'ready' | 'unavailable';
+export type ShellPhase = 'checking' | 'ready' | 'recovering' | 'unavailable';
 
 export interface ShellStatus {
   phase: ShellPhase;

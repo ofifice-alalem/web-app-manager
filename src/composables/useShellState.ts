@@ -13,7 +13,9 @@ export function useShellState() {
     targetUrl: null,
   });
 
-  const isLoading = computed(() => status.value.phase === 'checking');
+  const isLoading = computed(
+    () => status.value.phase === 'checking' || status.value.phase === 'recovering',
+  );
   const isReady = computed(() => status.value.phase === 'ready');
   const isUnavailable = computed(() => status.value.phase === 'unavailable');
 
