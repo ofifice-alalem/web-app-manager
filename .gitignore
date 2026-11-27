@@ -6,3 +6,8 @@ src-tauri/gen/
 Thumbs.db
 src-tauri/icons/
 resources/icons/app-icon.png
+settings-app/node_modules/
+settings-app/dist/
+settings-app/src-tauri/target/
+settings-app/src-tauri/gen/
+settings-app/src-tauri/icons/
