@@ -9,7 +9,7 @@ use tokio::sync::Notify;
 use super::policy::{BrowserError, NavigationPolicy};
 
 pub const MAIN_WINDOW_LABEL: &str = "main";
-const DEFAULT_WINDOW_TITLE: &str = "Desktop Application Host";
+const DEFAULT_WINDOW_TITLE: &str = "taqniya";
 const DEFAULT_WINDOW_WIDTH: f64 = 1280.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 800.0;
 const MIN_WINDOW_WIDTH: f64 = 800.0;
@@ -35,6 +35,7 @@ impl BrowserController {
             .inner_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
             .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
             .resizable(true)
+            .maximized(true)
             .center()
             .on_navigation(move |url| match nav_policy.read() {
                 Ok(guard) => guard.is_navigation_allowed(url),
