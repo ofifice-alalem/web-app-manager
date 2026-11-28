@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import companyLogo from '../assets/logo.ico';
+import recoveryIllustration from '../assets/recovery-illustration.jpg';
 
 defineProps<{
   message: string;
@@ -11,65 +11,74 @@ defineProps<{
     role="status"
     aria-live="polite"
     dir="rtl"
-    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-8 py-12 text-slate-900"
+    class="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-white text-slate-800 select-none p-6 lg:p-12"
   >
-    <div class="mx-auto grid w-full max-w-5xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-      <!-- Right Column (RTL): Logo + Headline + Message + Smooth Progress Bar -->
-      <div class="space-y-6 text-right">
-        <div class="inline-flex items-center gap-3">
-          <img :src="companyLogo" alt="Company Logo" class="h-14 w-14 object-contain" />
+    <div class="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      
+      <!-- Right Side (RTL - 5 Cols): Text & Animated Progress -->
+      <div class="lg:col-span-5 space-y-7 text-right order-2 lg:order-1">
+        
+        <!-- Modern Tech Pill -->
+        <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-blue-50/90 border border-blue-200/60 text-[#1e40af] text-xs font-black shadow-sm">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#1d4ed8]"></span>
+          </span>
+          <span>الاتصال بالخادم قيد المعالجة...</span>
         </div>
 
-        <h1 class="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl">
-          <span class="text-[#3730a3]">لحظة!</span>
-          جارٍ تجهيز المنظومة
-        </h1>
+        <!-- Headline -->
+        <div class="space-y-3">
+          <h1 class="text-4xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+            <span class="text-[#1d4ed8]">لحظة!</span>
+            جـارٍ تجهيز المنظومة
+          </h1>
+          <p class="text-slate-500 text-base lg:text-lg font-medium leading-relaxed max-w-xl">
+            {{ message || 'نقوم الآن بالتحقق من استجابة قاعدة البيانات ومحرك الخدمات محلياً، وسيتم تحويلك لواجهة البيع فور اكتمال الجاهزية.' }}
+          </p>
+        </div>
 
-        <p class="max-w-md text-base font-medium leading-relaxed text-slate-500">
-          {{ message }}
-        </p>
-
-        <!-- Smooth Sliding Progress Bar -->
-        <div class="max-w-sm pt-2">
-          <div class="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-            <div class="animate-steam-progress h-full w-1/2 rounded-full bg-gradient-to-r from-[#38bdf8] via-[#0ea5e9] to-[#3730a3]" />
+        <!-- Progress Bar Box -->
+        <div class="pt-4 space-y-3 max-w-lg">
+          <div class="flex justify-between items-center text-xs font-bold text-slate-400 px-1">
+            <span>استعادة الخدمة وإعادة التحميل الذاتي</span>
+            <span class="font-mono text-[#1d4ed8] font-black">الخطوة 1 من 2</span>
+          </div>
+          
+          <div class="h-3.5 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner p-0.5 border border-slate-200/50">
+            <div class="h-full w-2/5 bg-gradient-to-l from-[#1d4ed8] via-[#0284c7] to-[#38bdf8] rounded-full animate-steam-progress"></div>
           </div>
         </div>
+
       </div>
 
-      <!-- Left Column (RTL): Watermark + Blue Cable Illustration -->
-      <div class="relative flex items-center justify-center select-none" aria-hidden="true">
-        <span class="text-[9rem] font-black tracking-tighter text-slate-100 sm:text-[11rem]">
-          503
-        </span>
-
-        <svg
-          class="absolute h-64 w-64 drop-shadow-xl sm:h-72 sm:w-72"
-          viewBox="0 0 260 220"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M15 95 C 95 95, 115 45, 165 65 C 210 82, 185 155, 115 162"
-            stroke="#0284c7"
-            stroke-width="11"
-            stroke-linecap="round"
+      <!-- Left Side (RTL - 7 Cols): Large Recovery Illustration (Seamless Blend, No Shadow) -->
+      <div class="lg:col-span-7 relative flex items-center justify-center order-1 lg:order-2 bg-transparent select-none">
+        <div class="relative w-[480px] h-[480px] sm:w-[620px] sm:h-[620px] flex items-center justify-center bg-transparent">
+          <img
+            :src="recoveryIllustration"
+            alt="Taqniya System Recovery"
+            class="w-full h-full object-contain blend-clean select-none pointer-events-none drop-shadow-none"
           />
-          <path
-            d="M15 95 C 95 95, 115 45, 165 65 C 210 82, 185 155, 115 162"
-            stroke="#38bdf8"
-            stroke-width="4"
-            stroke-linecap="round"
-          />
-          <g transform="translate(68, 140) rotate(-12)">
-            <rect x="0" y="6" width="46" height="32" rx="7" fill="#0284c7" />
-            <rect x="6" y="10" width="34" height="10" rx="3" fill="#38bdf8" opacity="0.5" />
-            <rect x="44" y="12" width="10" height="20" rx="2" fill="#0369a1" />
-            <rect x="-16" y="13" width="16" height="5" rx="2" fill="#94a3b8" />
-            <rect x="-16" y="26" width="16" height="5" rx="2" fill="#94a3b8" />
-          </g>
-        </svg>
+        </div>
       </div>
+
     </div>
   </div>
 </template>
+
+<style scoped>
+.blend-clean {
+  mix-blend-mode: multiply;
+}
+
+@keyframes steamProgress {
+  0% { transform: translateX(180%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(-180%); }
+}
+
+.animate-steam-progress {
+  animation: steamProgress 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+</style>

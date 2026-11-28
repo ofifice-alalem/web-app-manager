@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة مراجعة تصاميم Taqniya</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f141a;
+      --card-bg: #171d25;
+      --border: #2a3847;
+      --text: #c6d4df;
+      --title: #ffffff;
+      --accent: #66c0f4;
+      --switch-bg: #1b2838;
+      --switch-btn: #2e3c4d;
+      --switch-icon: #66c0f4;
+    }
+
+    html.light {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #475569;
+      --title: #0f172a;
+      --accent: #0284c7;
+      --switch-bg: #e2e8f0;
+      --switch-btn: #ffffff;
+      --switch-icon: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: all 0.25s ease;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Tajawal', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+    }
+    .top-bar {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      right: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Modern Professional Segmented / Pill Switch */
+    .theme-segmented-switch {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border-radius: 9999px;
+      background: var(--switch-bg);
+      border: 1px solid var(--border);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+    }
+    .theme-pill-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .theme-pill-option.active {
+      background: var(--switch-btn);
+      color: var(--title);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    .theme-pill-option svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.2;
+    }
+    .theme-pill-option.active svg {
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: 960px;
+      width: 100%;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .header-logo {
+      width: 54px;
+      height: 54px;
+      margin-bottom: 12px;
+    }
+    .header h1 {
+      font-size: 32px;
+      color: var(--title);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    .card-badge {
+      align-self: flex-start;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-blue { background: rgba(102, 192, 244, 0.15); color: #0284c7; }
+    html:not(.light) .badge-blue { color: #66c0f4; }
+    .badge-green { background: rgba(92, 126, 16, 0.18); color: #16a34a; }
+    html:not(.light) .badge-green { color: #a4d007; }
+    .card-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--title);
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .card-footer {
+      margin-top: auto;
+      padding-top: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <span style="font-size: 12px; font-weight: 700; color: var(--text);">مجلد الأصول المشتركة: /preview/assets/img/</span>
+    
+    <!-- Modern Segmented Theme Controller -->
+    <div class="theme-segmented-switch" id="themeSwitch">
+      <button class="theme-pill-option" id="optLight" onclick="setTheme(false)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <span>فاتح</span>
+      </button>
+
+      <button class="theme-pill-option active" id="optDark" onclick="setTheme(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <span>داكن</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <img src="assets/img/logo.png" alt="Taqniya Logo" class="header-logo">
+      <h1>معاينة واجهات وتصاميم منظومة Taqniya</h1>
+      <p>يدعم الآن التبديل بين الوضع الفاتح والوضع الليلي في جميع الشاشات</p>
+    </div>
+
+    <div class="grid">
+      <!-- Card 1 -->
+      <a href="host_overlay/index.html" class="card">
+        <span class="card-badge badge-blue">شاشة الانتظار والخطأ</span>
+        <h2 class="card-title">شاشة الانتظار (Overlay)</h2>
+        <p class="card-desc">الشعار المدمج مع رسمة الكيبل، كود الخطأ 503 في الخلفية، وشريط تقدم الاستعادة مع دعم الوضعين الفاتح والليلي.</p>
+        <div class="card-footer">
+          <span>فتح المعاينة</span>
+          <span>←</span>
+        </div>
+      </a>
+
+      <!-- Card 2 -->
+      <a href="setting_pages/setup.html" class="card">
+        <span class="card-badge badge-green">تصميم الإعدادات (Steam Style)</span>
+        <h2 class="card-title">صفحة قواعد الاستعادة والربط</h2>
+        <p class="card-desc">إعدادات المنظومة وقواعد إعادة التشغيل مع إمكانية التبديل الفوري بين النمط الداكن والفاتح.</p>
+        <div class="card-footer">
+          <span>فتح المعاينة</span>
+          <span>←</span>
+        </div>
+      </a>
+
+      <!-- Card 3 -->
+      <a href="setting_pages/logs.html" class="card">
+        <span class="card-badge badge-green">تصميم الإعدادات (Steam Style)</span>
+        <h2 class="card-title">صفحة سجل الأحداث والعمليات</h2>
+        <p class="card-desc">قائمة حالات التنفيذ ومخرجات نافذة الأوامر Console متجاوبة مع النمط الفاتح والداكن.</p>
+        <div class="card-footer">
+          <span>فتح المعاينة</span>
+          <span>←</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function setTheme(isDark) {
+      const html = document.documentElement;
+      const optLight = document.getElementById('optLight');
+      const optDark = document.getElementById('optDark');
+      
+      if (isDark) {
+        html.classList.remove('light');
+        optDark.classList.add('active');
+        optLight.classList.remove('active');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.classList.add('light');
+        optLight.classList.add('active');
+        optDark.classList.remove('active');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme === 'dark');
+  </script>
+</body>
+</html>

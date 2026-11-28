@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taqniya Settings - سجل الأحداث والعمليات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables: Theme Aware */
+    :root {
+      --bg-client: #171d25;
+      --bg-header: #171a21;
+      --bg-sidebar: #12161c;
+      --bg-panel: #1b2838;
+      --bg-card: #212b36;
+      --bg-card-hover: #293644;
+      --bg-card-active: #23374d;
+      --bg-terminal: #0e141b;
+      --bg-terminal-header: #090d12;
+      --border-color: #2a3847;
+      --border-highlight: #3d5066;
+      --steam-blue: #66c0f4;
+      --steam-blue-active: #47bfff;
+      --steam-green: #5c7e10;
+      --steam-green-hover: #6ea012;
+      --steam-red: #c23838;
+      --text-main: #c6d4df;
+      --text-title: #ffffff;
+      --text-muted: #8091a2;
+      --text-dim: #546473;
+      --font-ui: 'Tajawal', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html.light {
+      --bg-client: #f1f5f9;
+      --bg-header: #ffffff;
+      --bg-sidebar: #f8fafc;
+      --bg-panel: #ffffff;
+      --bg-card: #f8fafc;
+      --bg-card-hover: #f1f5f9;
+      --bg-card-active: #e0f2fe;
+      --bg-terminal: #0f172a;
+      --bg-terminal-header: #020617;
+      --border-color: #e2e8f0;
+      --border-highlight: #cbd5e1;
+      --steam-blue: #0284c7;
+      --steam-blue-active: #0369a1;
+      --steam-green: #16a34a;
+      --steam-green-hover: #15803d;
+      --text-main: #334155;
+      --text-title: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    body {
+      background-color: var(--bg-client);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Window Header */
+    .steam-header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+    }
+
+    .steam-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .steam-logo {
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+
+    .steam-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-title);
+      letter-spacing: 0.5px;
+    }
+
+    .window-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* Modern Theme Switch */
+    .theme-segmented-switch {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+    }
+    .theme-pill-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: var(--font-ui);
+    }
+    .theme-pill-btn.active {
+      background: var(--bg-panel);
+      color: var(--steam-blue);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+    .theme-pill-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke-width: 2.2;
+    }
+
+    .window-btn:hover {
+      color: var(--text-title);
+      cursor: pointer;
+    }
+
+    /* Layout */
+    .app-body {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 48px);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--bg-sidebar);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 0;
+    }
+
+    .sidebar-section-title {
+      padding: 0 20px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .nav-list {
+      list-style: none;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      border-right: 3px solid transparent;
+    }
+
+    .nav-item a:hover {
+      background: rgba(100, 116, 139, 0.08);
+      color: var(--text-title);
+    }
+
+    .nav-item.active a {
+      background: rgba(102, 192, 244, 0.12);
+      color: var(--steam-blue);
+      border-right-color: var(--steam-blue);
+      font-weight: 800;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--steam-green);
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--steam-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(92, 126, 16, 0.5);
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-panel);
+      overflow: hidden;
+    }
+
+    .content-header {
+      padding: 20px 28px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-title);
+    }
+
+    .page-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .log-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .steam-btn {
+      padding: 7px 15px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: var(--font-ui);
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+    .btn-secondary:hover {
+      border-color: var(--steam-blue);
+      color: var(--steam-blue);
+    }
+
+    .btn-danger {
+      background: rgba(194, 56, 56, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(194, 56, 56, 0.3);
+    }
+    .btn-danger:hover {
+      background: rgba(194, 56, 56, 0.25);
+    }
+
+    /* Logs Grid */
+    .logs-container {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .logs-list-pane {
+      background: var(--bg-client);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .list-filter-bar {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-chip {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 3px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .filter-chip.active {
+      background: var(--steam-blue);
+      color: #ffffff;
+      border-color: var(--steam-blue);
+      font-weight: 700;
+    }
+
+    .items-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .log-item {
+      padding: 12px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .log-item:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-highlight);
+    }
+
+    .log-item.active {
+      background: var(--bg-card-active);
+      border-color: var(--steam-blue);
+    }
+
+    .log-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-success {
+      background: rgba(34, 197, 94, 0.15);
+      color: #16a34a;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .badge-error {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .log-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .log-item-trigger {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-title);
+      margin-bottom: 4px;
+    }
+
+    .log-item-summary {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Detail View */
+    .log-detail-pane {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 18px;
+    }
+
+    .detail-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 18px;
+    }
+
+    .detail-card-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--steam-blue);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .meta-box {
+      background: var(--bg-panel);
+      padding: 10px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .meta-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .meta-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-title);
+      font-family: var(--font-mono);
+    }
+
+    /* Terminal Console Display */
+    .terminal-container {
+      background: var(--bg-terminal);
+      border: 1px solid #1a2533;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .terminal-header {
+      background: var(--bg-terminal-header);
+      padding: 8px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #94a3b8;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .terminal-output {
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #93c5fd;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      max-height: 240px;
+      overflow-y: auto;
+      user-select: text;
+    }
+
+    .cmd-line {
+      color: #4ade80;
+      margin-bottom: 8px;
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-highlight); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- Window Header -->
+  <header class="steam-header">
+    <div class="steam-brand">
+      <img src="../assets/img/logo.png" alt="Taqniya Logo" class="steam-logo">
+      <span class="steam-title">Taqniya Settings</span>
+    </div>
+    <div class="window-controls">
+      <!-- Modern Theme Segmented Controller -->
+      <div class="theme-segmented-switch">
+        <button class="theme-pill-btn" id="logsBtnLight" onclick="setTheme(false)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <span>فاتح</span>
+        </button>
+        <button class="theme-pill-btn active" id="logsBtnDark" onclick="setTheme(true)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span>داكن</span>
+        </button>
+      </div>
+
+      <span class="window-btn">─</span>
+      <span class="window-btn">□</span>
+      <span class="window-btn">✕</span>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-section-title">إدارة النظام</div>
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="setup.html">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span>قواعد الاستعادة والربط</span>
+            </a>
+          </li>
+          <li class="nav-item active">
+            <a href="logs.html">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              <span>سجل الأحداث والعمليات</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          <span>المضيف: متصل وجاهز</span>
+        </div>
+        <span>الإصدار 1.0.0 (Linux x64)</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content-area">
+      <div class="content-header">
+        <div>
+          <h1 class="page-title">سجل الأحداث والعمليات (Execution Logs)</h1>
+          <p class="page-desc">مراقبة محاولات الاستعادة التلقائية، التحقق من صحة المنظومة، ومخرجات الأوامر المنفذة</p>
+        </div>
+        <div class="log-actions">
+          <button class="steam-btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            <span>تحديث السجل</span>
+          </button>
+          <button class="steam-btn btn-danger">
+            <span>مسح السجل</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="logs-container">
+        <!-- Master List -->
+        <div class="logs-list-pane">
+          <div class="list-filter-bar">
+            <span class="filter-chip active">الكل (14)</span>
+            <span class="filter-chip">الناجحة (12)</span>
+            <span class="filter-chip">المتعثرة (2)</span>
+          </div>
+
+          <div class="items-scroll">
+            <div class="log-item active">
+              <div class="log-item-header">
+                <span class="badge badge-success">✓ استعادة ناجحة</span>
+                <span class="log-time">15:32:04</span>
+              </div>
+              <div class="log-item-trigger">تعثر استجابة HTTP (503 Service Unavailable)</div>
+              <div class="log-item-summary">تم تنفيذ أمر إعادة تشغيل الحاوية بنجاح في 1.4 ثانية</div>
+            </div>
+
+            <div class="log-item">
+              <div class="log-item-header">
+                <span class="badge badge-success">✓ فحص دوري</span>
+                <span class="log-time">15:30:00</span>
+              </div>
+              <div class="log-item-trigger">فحص الدورة المجدولة (Heartbeat)</div>
+              <div class="log-item-summary">الخدمة تستجيب بالكود 200 OK عبر المنفذ 8000</div>
+            </div>
+
+            <div class="log-item">
+              <div class="log-item-header">
+                <span class="badge badge-error">✕ خطأ في الفحص</span>
+                <span class="log-time">15:28:12</span>
+              </div>
+              <div class="log-item-trigger">انقطاع فحص المنفذ (TCP 3307)</div>
+              <div class="log-item-summary">انتهت مهلة الاتصال مع قاعدة البيانات بعد 3000ms</div>
+            </div>
+
+            <div class="log-item">
+              <div class="log-item-header">
+                <span class="badge badge-success">✓ بدء تشغيل</span>
+                <span class="log-time">15:10:00</span>
+              </div>
+              <div class="log-item-trigger">بدء تشغيل المضيف (Host Startup)</div>
+              <div class="log-item-summary">تم تحميل ملف الإعدادات والتحقق من التبعيات</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail View -->
+        <div class="log-detail-pane">
+          <div class="detail-card">
+            <div class="detail-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>تفاصيل العملية المحددة</span>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-box">
+                <div class="meta-label">السبب / المحفز</div>
+                <div class="meta-val">HTTP_STATUS_503</div>
+              </div>
+              <div class="meta-box">
+                <div class="meta-label">رمز الخروج (Exit Code)</div>
+                <div class="meta-val" style="color: #16a34a;">0 (SUCCESS)</div>
+              </div>
+              <div class="meta-box">
+                <div class="meta-label">مدة التنفيذ الإجمالية</div>
+                <div class="meta-val">1420 ms</div>
+              </div>
+              <div class="meta-box">
+                <div class="meta-label">وقت الحدث</div>
+                <div class="meta-val">2026-11-28 15:32:04</div>
+              </div>
+              <div class="meta-box">
+                <div class="meta-label">الرابط المستهدف</div>
+                <div class="meta-val">http://localhost:8000/</div>
+              </div>
+              <div class="meta-box">
+                <div class="meta-label">نوع الاستعادة</div>
+                <div class="meta-val">Shell Command</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              <span>مخرجات التنفيذ المباشرة (Terminal Logs)</span>
+            </div>
+
+            <div class="terminal-container">
+              <div class="terminal-header">
+                <span>Console Output - Command #1</span>
+                <span>/bin/bash</span>
+              </div>
+              <div class="terminal-output"><span class="cmd-line">$ docker restart webapp_container</span>
+Restarting container: webapp_container...
+Container webapp_container stopped [200ms]
+Container webapp_container started with id: e791cbf8921a [1120ms]
+Health check probe sent to http://localhost:8000/
+Response: 200 OK (latency: 42ms)
+Recovery condition met. Closing waiting overlay and loading application window.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function setTheme(isDark) {
+      const html = document.documentElement;
+      const btnLight = document.getElementById('logsBtnLight');
+      const btnDark = document.getElementById('logsBtnDark');
+      if (isDark) {
+        html.classList.remove('light');
+        btnDark.classList.add('active');
+        btnLight.classList.remove('active');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.classList.add('light');
+        btnLight.classList.add('active');
+        btnDark.classList.remove('active');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme === 'dark');
+  </script>
+</body>
+</html>

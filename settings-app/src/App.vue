@@ -44,6 +44,7 @@ interface CommandExecution {
 }
 
 const activeTab = ref<Tab>('setup');
+const isDarkMode = ref(true);
 const configDir = ref('');
 const feedback = ref<{ type: 'ok' | 'err'; text: string } | null>(null);
 const isSaving = ref(false);
@@ -55,7 +56,7 @@ const rules = ref<SimpleRuleForm[]>([
     errorKind: 'connection_refused',
     httpCodesText: '500',
     steps: [
-      { commandText: 'docker start perfumes_db perfumes_app', waitSeconds: 3 },
+      { commandText: 'docker restart webapp_container', waitSeconds: 3 },
     ],
   },
 ]);
@@ -63,6 +64,11 @@ const rules = ref<SimpleRuleForm[]>([
 const logs = ref<LogEvent[]>([]);
 const selectedEventId = ref<number | null>(null);
 const executions = ref<CommandExecution[]>([]);
+
+function setTheme(dark: boolean) {
+  isDarkMode.value = dark;
+  window.localStorage.setItem('settings_theme', dark ? 'dark' : 'light');
+}
 
 function parseCommandLine(cmdLine: string): { executable: string; args: string[] } | null {
   const parts = cmdLine.trim().split(/\s+/).filter(Boolean);
@@ -81,7 +87,7 @@ function addRule() {
   rules.value.push({
     errorKind: 'http_status',
     httpCodesText: '500, 502, 503',
-    steps: [{ commandText: 'docker start perfumes_db perfumes_app', waitSeconds: 5 }],
+    steps: [{ commandText: 'docker restart webapp_container', waitSeconds: 3 }],
   });
 }
 
@@ -150,7 +156,7 @@ async function loadAll() {
         }
 
         if (steps.length === 0) {
-          steps.push({ commandText: 'docker start perfumes_db perfumes_app', waitSeconds: 3 });
+          steps.push({ commandText: 'docker restart webapp_container', waitSeconds: 3 });
         }
 
         return { errorKind, httpCodesText, steps };
@@ -328,269 +334,300 @@ async function saveAllConfigs() {
 }
 
 onMounted(() => {
+  const saved = localStorage.getItem('settings_theme');
+  if (saved) {
+    isDarkMode.value = saved === 'dark';
+  }
   loadAll();
 });
 </script>
 
 <template>
-  <div dir="rtl" class="cinnamon-app flex h-screen flex-col overflow-hidden text-[#e8e8e8] font-sans select-none bg-[#1e2022]">
-    
-    <!-- Top HeaderBar (Cinnamon / Mint Style) -->
-    <header class="cinnamon-headerbar shrink-0 flex items-center justify-between px-6 py-3 border-b border-[#323639] bg-[#272a2d] shadow-md z-10">
-      
-      <!-- App Brand -->
+  <div
+    dir="rtl"
+    class="steam-client flex h-screen flex-col overflow-hidden select-none font-sans"
+    :class="isDarkMode ? 'dark-theme' : 'light-theme'"
+  >
+    <!-- Steam Top Window Header -->
+    <header class="steam-top-bar flex h-11 shrink-0 items-center justify-between px-4 z-20">
       <div class="flex items-center gap-3">
-        <div class="app-icon-badge flex h-9 w-9 items-center justify-center rounded-xl bg-[#1e2022] border border-[#3e4347] shadow-inner p-1.5">
-          <img :src="companyLogo" alt="Logo" class="h-6 w-6 object-contain" />
-        </div>
-        <div>
-          <h1 class="text-sm font-bold text-white tracking-wide">مدير المنظومة ومضيف التطبيق</h1>
-          <p class="text-[11px] text-[#9a9fa5]">إعدادات الاتصال، الفحص، والاستعادة الذاتية</p>
-        </div>
+        <img :src="companyLogo" alt="Logo" class="h-6 w-6 object-contain" />
+        <span class="text-xs font-bold uppercase tracking-wider title-text">
+          Taqniya Settings // إعدادات تقنية
+        </span>
       </div>
 
-      <!-- Centered Tab Switcher (Mint Linked Buttons) -->
-      <div class="mint-tab-switcher flex rounded-lg bg-[#1a1c1d] border border-[#3a3f43] p-1 shadow-inner">
-        <button
-          class="tab-btn px-5 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-2"
-          :class="activeTab === 'setup' 
-            ? 'bg-[#3b82f6] text-white shadow-sm' 
-            : 'text-[#9ca3af] hover:text-white hover:bg-[#282b2e]'"
-          @click="activeTab = 'setup'"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-          </svg>
-          قواعد الاستعادة والربط
-        </button>
-        <button
-          class="tab-btn px-5 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-2"
-          :class="activeTab === 'logs' 
-            ? 'bg-[#3b82f6] text-white shadow-sm' 
-            : 'text-[#9ca3af] hover:text-white hover:bg-[#282b2e]'"
-          @click="activeTab = 'logs'; refreshLogs()"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-          سجل عمليات الإصلاح
-        </button>
-      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <!-- Professional Theme Segmented Switch -->
+        <div class="theme-switch-container flex items-center gap-1 p-0.5 rounded-full border border-subtle">
+          <button
+            type="button"
+            class="theme-pill-btn flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition"
+            :class="!isDarkMode ? 'theme-pill-active' : 'theme-pill-idle'"
+            @click="setTheme(false)"
+          >
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <span>فاتح</span>
+          </button>
 
-      <!-- Action Button -->
-      <div>
-        <button
-          :disabled="isSaving"
-          class="mint-btn-primary px-5 py-1.5 text-xs font-bold rounded-lg bg-[#22c55e] hover:bg-[#16a34a] active:bg-[#15803d] text-white shadow-md shadow-green-900/20 border border-[#16a34a] transition-all disabled:opacity-50 flex items-center gap-2"
-          @click="saveAllConfigs"
-        >
-          <svg v-if="!isSaving" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-          {{ isSaving ? 'جارٍ الحفظ...' : 'حفظ الإعدادات' }}
-        </button>
+          <button
+            type="button"
+            class="theme-pill-btn flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition"
+            :class="isDarkMode ? 'theme-pill-active' : 'theme-pill-idle'"
+            @click="setTheme(true)"
+          >
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <span>داكن</span>
+          </button>
+        </div>
+
+        <span class="muted-text font-mono">v1.0.0 (Linux x64)</span>
       </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto px-6 py-6 bg-[#181a1b]">
-      <div class="max-w-4xl mx-auto space-y-6">
-        
-        <!-- Feedback Alert -->
-        <div
-          v-if="feedback"
-          class="mint-alert flex items-center justify-between rounded-xl px-4 py-3 text-xs font-medium border shadow-sm"
-          :class="feedback.type === 'ok'
-            ? 'border-emerald-600/40 bg-emerald-950/40 text-emerald-300'
-            : 'border-rose-600/40 bg-rose-950/40 text-rose-300'"
-        >
-          <div class="flex items-center gap-2.5">
-            <span class="inline-block w-2.5 h-2.5 rounded-full" :class="feedback.type === 'ok' ? 'bg-emerald-400' : 'bg-rose-400'"></span>
-            <span class="text-xs">{{ feedback.text }}</span>
+    <!-- App Body (Sidebar + Content) -->
+    <div class="flex flex-1 overflow-hidden">
+      <!-- Steam Left Sidebar (Navigation) -->
+      <aside class="steam-sidebar flex w-64 flex-col justify-between shrink-0 p-3 z-10">
+        <div class="space-y-4">
+          <!-- Profile Badge -->
+          <div class="profile-badge flex items-center gap-3 rounded-lg p-3">
+            <div class="relative">
+              <img :src="companyLogo" alt="Logo" class="h-9 w-9 p-1 rounded-md shadow-sm" />
+              <span class="absolute bottom-0 left-0 h-2 w-2 rounded-full bg-emerald-500"></span>
+            </div>
+            <div>
+              <div class="text-xs font-extrabold text-main">منظومة المبيعات</div>
+              <div class="text-[10px] font-mono accent-blue">DOCKER // ACTIVE</div>
+            </div>
           </div>
-          <button class="text-xs opacity-70 hover:opacity-100 px-2 py-0.5 rounded" @click="feedback = null">✕</button>
+
+          <!-- Nav Items -->
+          <nav class="space-y-1 text-xs font-bold">
+            <button
+              type="button"
+              class="nav-link flex w-full items-center gap-3 px-3.5 py-2.5 rounded transition"
+              :class="activeTab === 'setup' ? 'nav-active' : 'nav-idle'"
+              @click="activeTab = 'setup'"
+            >
+              <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+              </svg>
+              <span>قواعد الاستعادة والربط</span>
+            </button>
+
+            <button
+              type="button"
+              class="nav-link flex w-full items-center gap-3 px-3.5 py-2.5 rounded transition"
+              :class="activeTab === 'logs' ? 'nav-active' : 'nav-idle'"
+              @click="activeTab = 'logs'; refreshLogs()"
+            >
+              <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+              </svg>
+              <span>سجل الأحداث والعمليات</span>
+            </button>
+          </nav>
         </div>
 
-        <template v-if="activeTab === 'setup'">
-          
-          <!-- Section 1: Server URL & Startup -->
-          <div class="mint-section space-y-2.5">
-            <div class="flex items-center gap-2 px-1">
-              <span class="text-[12px] font-bold text-[#8fa0b0] uppercase tracking-wider">الربط الأساسي والمراقبة</span>
+        <!-- Sidebar Footer Status -->
+        <div class="sidebar-status rounded-lg p-3 text-[11px] space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+            <span class="font-bold text-main">محرك الحاويات: نشط</span>
+          </div>
+          <div class="muted-text font-mono truncate" dir="ltr">{{ configDir || '~/.config' }}</div>
+        </div>
+      </aside>
+
+      <!-- Steam Main Content Area -->
+      <main class="steam-main flex-1 overflow-y-auto p-8">
+        <div class="mx-auto max-w-4xl space-y-6">
+          <!-- Feedback Alert -->
+          <div
+            v-if="feedback"
+            class="feedback-alert flex items-center justify-between rounded-lg px-4 py-3 text-xs font-semibold"
+            :class="feedback.type === 'ok' ? 'feedback-ok' : 'feedback-err'"
+          >
+            <div class="flex items-center gap-2">
+              <span>{{ feedback.type === 'ok' ? '✓' : '✕' }}</span>
+              <span>{{ feedback.text }}</span>
             </div>
-            
-            <div class="mint-card rounded-2xl bg-[#24272a] border border-[#34393e] shadow-md p-5 space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                
-                <!-- URL Field -->
+            <button class="opacity-70 hover:opacity-100" @click="feedback = null">✕</button>
+          </div>
+
+          <!-- TAB 1: SETUP -->
+          <div v-if="activeTab === 'setup'" class="space-y-6">
+            <!-- Header Bar -->
+            <div class="flex items-center justify-between pb-4 border-b border-subtle">
+              <div>
+                <h2 class="text-2xl font-black text-main tracking-wide">الربط واستعادة الخدمات</h2>
+                <p class="text-xs muted-text mt-1">تحديد رابط الخادم وقواعد الإنعاش التلقائي عند تعطل الخدمات</p>
+              </div>
+
+              <button
+                :disabled="isSaving"
+                class="steam-btn-green flex items-center gap-2 px-6 py-2.5 rounded text-xs font-black text-white uppercase tracking-wider transition disabled:opacity-50"
+                @click="saveAllConfigs"
+              >
+                <svg v-if="!isSaving" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>{{ isSaving ? 'جارٍ الحفظ...' : 'حفظ الإعدادات' }}</span>
+              </button>
+            </div>
+
+            <!-- Target URL Box -->
+            <div class="steam-box rounded-lg p-6 space-y-4 shadow-sm">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-extrabold uppercase tracking-wider accent-blue flex items-center gap-2">
+                  <span class="h-2 w-2 rounded-full bg-sky-500"></span>
+                  <span>الهدف الأساسي للمنظومة</span>
+                </h3>
+                <span class="text-[11px] font-mono muted-text">TARGET CONFIG</span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="md:col-span-3 space-y-1.5">
-                  <div class="flex items-center justify-between">
-                    <label class="text-xs font-bold text-white">رابط المنظومة الأساسي (Target URL)</label>
-                    <span class="text-[11px] text-[#8e969d]">عنوان الويب المستضاف محلياً أو على الشبكة</span>
-                  </div>
-                  <div class="relative">
-                    <input
-                      v-model="targetUrl"
-                      dir="ltr"
-                      type="url"
-                      placeholder="http://127.0.0.1:8000"
-                      class="mint-input w-full rounded-xl border border-[#3e444a] bg-[#1a1c1e] px-3.5 py-2.5 text-xs font-mono text-[#60a5fa] placeholder-[#555d65] focus:border-[#3b82f6] focus:bg-[#151718] focus:outline-none transition shadow-inner"
-                    />
-                  </div>
+                  <label class="block text-xs font-bold text-main">رابط المنظومة (URL)</label>
+                  <input
+                    v-model="targetUrl"
+                    type="url"
+                    dir="ltr"
+                    placeholder="http://127.0.0.1:8000"
+                    class="steam-input w-full rounded px-4 py-2.5 text-xs font-mono focus:outline-none transition"
+                  />
+                  <p class="text-[11px] muted-text">الرابط المحلي الذي يستضيف تطبيق المبيعات</p>
                 </div>
 
-                <!-- Timeout Field -->
                 <div class="space-y-1.5">
-                  <label class="text-xs font-bold text-white block">مهلة الفحص</label>
+                  <label class="block text-xs font-bold text-main">مهلة الفحص</label>
                   <div class="flex items-center gap-2">
                     <input
                       v-model.number="startupTimeoutSeconds"
                       type="number"
                       min="1"
-                      max="180"
-                      class="mint-input w-24 rounded-xl border border-[#3e444a] bg-[#1a1c1e] px-3 py-2 text-xs font-semibold text-center text-white focus:border-[#3b82f6] focus:outline-none shadow-inner"
+                      max="120"
+                      class="steam-input w-full rounded px-3 py-2 text-xs font-mono text-center focus:outline-none"
                     />
-                    <span class="text-xs text-[#9aa2a9]">ثوانٍ</span>
+                    <span class="text-xs muted-text font-bold">ثوانٍ</span>
                   </div>
                 </div>
-
               </div>
             </div>
-          </div>
 
-          <!-- Section 2: Automated Recovery Rules -->
-          <div class="mint-section space-y-3 pt-2">
-            
-            <div class="flex items-center justify-between px-1">
-              <div>
-                <span class="text-[12px] font-bold text-[#8fa0b0] uppercase tracking-wider">حالات الخطأ وأوامر الاستعادة التلقائية</span>
-                <p class="text-[11px] text-[#78828c] mt-0.5">يتم فحص الرابط باستمرار، وعند تعثره يتم تشغيل الأوامر بالترتيب لإعادة النظام للعمل</p>
+            <!-- Recovery Rules Box -->
+            <div class="steam-box rounded-lg p-6 space-y-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-sm font-extrabold uppercase tracking-wider accent-blue flex items-center gap-2">
+                    <span class="h-2 w-2 rounded-full bg-sky-500"></span>
+                    <span>قواعد وأوامر الإنعاش التلقائي</span>
+                  </h3>
+                  <p class="text-[11px] muted-text mt-0.5">عند رصد الخطأ يتم تشغيل الأوامر بالترتيب</p>
+                </div>
+                <button
+                  type="button"
+                  class="steam-btn-secondary px-4 py-1.5 rounded text-xs font-bold transition flex items-center gap-1"
+                  @click="addRule"
+                >
+                  <span>+ إضافة قاعدة</span>
+                </button>
               </div>
-              <button
-                class="mint-btn-secondary px-3.5 py-1.5 rounded-lg bg-[#2f3438] hover:bg-[#383e43] border border-[#444b52] text-xs font-semibold text-[#60a5fa] hover:text-white transition flex items-center gap-1.5 shadow-sm"
-                @click="addRule"
-              >
-                <span class="text-sm font-bold leading-none">+</span>
-                <span>إضافة حالة خطأ</span>
-              </button>
-            </div>
 
-            <!-- Rules List -->
-            <div class="space-y-4">
-              <div
-                v-for="(rule, rIdx) in rules"
-                :key="rIdx"
-                class="rule-card rounded-2xl bg-[#24272a] border border-[#34393e] shadow-md p-5 space-y-4 transition-all"
-              >
-                <!-- Rule Header: Condition & Status -->
-                <div class="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-[#32363b]">
-                  
-                  <div class="flex items-center gap-3 flex-1 min-w-[280px]">
-                    <span class="h-6 w-6 rounded-lg bg-[#3b82f6]/20 text-[#60a5fa] border border-[#3b82f6]/40 flex items-center justify-center text-xs font-bold shrink-0">
-                      {{ rIdx + 1 }}
-                    </span>
-                    
-                    <div class="flex-1">
-                      <label class="block text-[11px] font-bold text-[#9ca3af] mb-1">نوع العطل / الخطأ المرصود:</label>
-                      <div class="relative">
-                        <select
-                          v-model="rule.errorKind"
-                          class="mint-select w-full rounded-xl border border-[#3e444a] bg-[#1a1c1e] text-[#f3f4f6] px-3.5 py-2 text-xs font-medium focus:border-[#3b82f6] focus:outline-none appearance-none cursor-pointer"
-                        >
-                          <option value="connection_refused" class="bg-[#1a1c1e] text-white">توقف الخدمة / رفض الاتصال (Connection Refused)</option>
-                          <option value="http_status" class="bg-[#1a1c1e] text-white">رمز استجابة ويب خاطئ (HTTP 500 / 502 / 503)</option>
-                          <option value="timeout" class="bg-[#1a1c1e] text-white">تجاوز مهلة الاستجابة (Connection Timeout)</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-[#9ca3af]">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                          </svg>
-                        </div>
-                      </div>
+              <!-- Rules Cards -->
+              <div class="space-y-4">
+                <div
+                  v-for="(rule, rIdx) in rules"
+                  :key="rIdx"
+                  class="rule-card rounded-lg p-5 space-y-4 border border-subtle"
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-subtle">
+                    <div class="flex items-center gap-2 flex-1 min-w-[260px]">
+                      <span class="rule-badge px-2 py-0.5 rounded text-[10px] font-mono font-bold">
+                        RULE #{{ rIdx + 1 }}
+                      </span>
+                      <select
+                        v-model="rule.errorKind"
+                        class="steam-input rounded px-3 py-1.5 text-xs font-bold focus:outline-none flex-1"
+                      >
+                        <option value="connection_refused">توقف الخدمة / رفض الاتصال (Connection Refused)</option>
+                        <option value="http_status">رمز استجابة ويب خاطئ (HTTP 500 / 502 / 503)</option>
+                        <option value="timeout">تجاوز مهلة الاستجابة (Connection Timeout)</option>
+                      </select>
                     </div>
-                  </div>
 
-                  <!-- HTTP Code Box if HTTP error selected -->
-                  <div v-if="rule.errorKind === 'http_status'" class="w-40">
-                    <label class="block text-[11px] font-bold text-[#9ca3af] mb-1">رموز الأكواد المستهدفة:</label>
-                    <input
-                      v-model="rule.httpCodesText"
-                      dir="ltr"
-                      placeholder="500, 502, 503"
-                      class="mint-input w-full rounded-xl border border-[#3e444a] bg-[#1a1c1e] px-3 py-2 text-xs font-mono text-[#fbbf24] focus:border-[#3b82f6] focus:outline-none"
-                    />
-                  </div>
+                    <div v-if="rule.errorKind === 'http_status'" class="w-36">
+                      <input
+                        v-model="rule.httpCodesText"
+                        dir="ltr"
+                        placeholder="500, 502, 503"
+                        class="steam-input w-full rounded px-2.5 py-1 text-xs font-mono text-center"
+                      />
+                    </div>
 
-                  <!-- Delete Rule Button -->
-                  <div class="self-end pb-0.5">
                     <button
                       v-if="rules.length > 1"
-                      class="text-xs font-semibold text-[#f87171] hover:text-white px-3 py-1.5 rounded-lg hover:bg-rose-950/40 border border-transparent hover:border-rose-800/50 transition"
+                      type="button"
+                      class="text-xs font-bold text-rose-500 hover:underline px-2 py-1"
                       @click="removeRule(rIdx)"
                     >
-                      حذف الحالة
+                      حذف القاعدة
                     </button>
                   </div>
-                </div>
 
-                <!-- Recovery Actions Sequence -->
-                <div class="space-y-2.5">
-                  <div class="flex items-center justify-between text-xs">
-                    <div class="flex items-center gap-1.5 text-[#9ca3af]">
-                      <svg class="w-3.5 h-3.5 text-[#60a5fa]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                      </svg>
-                      <span class="font-bold text-white">خطوات الإصلاح التسلسلية:</span>
-                      <span class="text-[11px] text-[#71717a]">(تُنفذ تباعاً في حال حدوث هذا العطل)</span>
+                  <!-- Steps Inside Rule -->
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-bold text-main">خطوات الإصلاح التسلسلية:</span>
+                      <button
+                        type="button"
+                        class="accent-blue hover:underline text-xs font-bold"
+                        @click="addStep(rule)"
+                      >
+                        + أمر إضافي
+                      </button>
                     </div>
 
-                    <button
-                      class="text-xs font-semibold text-[#60a5fa] hover:text-[#93c5fd] hover:underline flex items-center gap-1"
-                      @click="addStep(rule)"
-                    >
-                      <span>+ إضافة أمر تنفيذ</span>
-                    </button>
-                  </div>
-
-                  <!-- Step Rows -->
-                  <div class="space-y-2">
                     <div
                       v-for="(step, sIdx) in rule.steps"
                       :key="sIdx"
-                      class="step-row flex flex-wrap items-center gap-3 rounded-xl bg-[#1c1e20] border border-[#2f3337] p-3 shadow-inner"
+                      class="step-item flex items-center gap-3 rounded p-2.5 border border-subtle"
                     >
-                      <!-- Step index -->
-                      <span class="flex h-5 w-5 items-center justify-center rounded-md bg-[#2b2f34] text-[11px] font-mono font-bold text-[#9ca3af] shrink-0">
-                        {{ sIdx + 1 }}
-                      </span>
-
-                      <!-- Command Input -->
-                      <div class="flex-1 min-w-[240px]">
-                        <input
-                          v-model="step.commandText"
-                          dir="ltr"
-                          placeholder="docker start perfumes_db perfumes_app"
-                          class="mint-input w-full rounded-lg border border-[#3b4046] bg-[#141517] px-3 py-1.5 text-xs font-mono text-[#4ade80] placeholder-[#475569] focus:border-[#3b82f6] focus:outline-none"
-                        />
-                      </div>
-
-                      <!-- Wait Input -->
-                      <div class="flex items-center gap-1.5 text-xs text-[#9ca3af]">
-                        <span class="text-[11px]">انتظار بعده:</span>
+                      <span class="text-xs font-mono font-bold muted-text">{{ sIdx + 1 }}.</span>
+                      <input
+                        v-model="step.commandText"
+                        dir="ltr"
+                        placeholder="docker restart webapp_container"
+                        class="steam-input flex-1 rounded px-3 py-1.5 text-xs font-mono cmd-text focus:outline-none"
+                      />
+                      <div class="flex items-center gap-1.5 text-xs muted-text">
+                        <span>انتظار:</span>
                         <input
                           v-model.number="step.waitSeconds"
                           type="number"
                           min="0"
-                          class="mint-input w-14 rounded-lg border border-[#3b4046] bg-[#141517] px-2 py-1 text-center text-xs font-semibold text-white focus:border-[#3b82f6] focus:outline-none"
+                          class="steam-input w-12 rounded px-1.5 py-1 text-center text-xs font-mono"
                         />
-                        <span class="text-[11px]">ثوانٍ</span>
+                        <span>ثوانٍ</span>
                       </div>
-
-                      <!-- Remove Step -->
                       <button
                         v-if="rule.steps.length > 1"
-                        class="text-[#9ca3af] hover:text-[#f87171] p-1 rounded hover:bg-[#282b2e] transition"
-                        title="حذف هذا الأمر"
+                        type="button"
+                        class="text-rose-500 hover:text-rose-400 p-1"
                         @click="removeStep(rule, sIdx)"
                       >
                         ✕
@@ -598,127 +635,280 @@ onMounted(() => {
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
-
           </div>
 
-        </template>
-
-        <!-- Tab 2: Logs Inspector -->
-        <template v-else>
-          <div class="mint-section space-y-3">
-            <div class="flex items-center justify-between px-1">
+          <!-- TAB 2: LOGS -->
+          <div v-else class="space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-subtle">
               <div>
-                <span class="text-[12px] font-bold text-[#8fa0b0] uppercase tracking-wider">سجل عمليات الإصلاح والاستعادة</span>
-                <p class="text-[11px] text-[#78828c]">مراقبة سجل الأحداث والأوامر التي تم تنفيذها تلقائياً</p>
+                <h2 class="text-2xl font-black text-main tracking-wide">سجل الأحداث والعمليات</h2>
+                <p class="text-xs muted-text mt-1">مراقبة محاولات الاستعادة التلقائية ومخرجات الأوامر</p>
               </div>
               <button
-                class="mint-btn-secondary px-4 py-1.5 rounded-lg bg-[#2f3438] hover:bg-[#383e43] border border-[#444b52] text-xs font-semibold text-[#60a5fa] hover:text-white transition flex items-center gap-1.5"
+                type="button"
+                class="steam-btn-secondary px-4 py-2 rounded text-xs font-bold transition"
                 @click="refreshLogs"
               >
-                <span>تحديث السجل</span>
+                تحديث السجل
               </button>
             </div>
 
-            <div v-if="logs.length === 0" class="mint-card rounded-2xl bg-[#24272a] border border-[#34393e] p-12 text-center text-xs text-[#9ca3af] shadow-md">
+            <div v-if="logs.length === 0" class="steam-box rounded-lg p-12 text-center text-xs muted-text">
               لم يتم تسجيل أي عمليات استعادة تلقائية بعد. النظام يعمل بشكل طبيعي.
             </div>
 
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              <!-- Events List -->
-              <div class="mint-card rounded-2xl bg-[#24272a] border border-[#34393e] divide-y divide-[#32363b] max-h-[480px] overflow-y-auto shadow-md">
+            <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              <!-- Logs List (5 Cols) -->
+              <div class="lg:col-span-5 steam-box rounded-lg p-3 divide-y divide-subtle max-h-[500px] overflow-y-auto">
                 <div
                   v-for="ev in logs"
                   :key="ev.id"
-                  class="p-3.5 cursor-pointer hover:bg-[#2c3034] transition text-xs space-y-1.5"
-                  :class="selectedEventId === ev.id ? 'bg-[#3b82f6]/15 border-r-4 border-[#3b82f6]' : ''"
+                  class="log-row p-3 rounded cursor-pointer transition text-xs space-y-1.5"
+                  :class="selectedEventId === ev.id ? 'log-active' : ''"
                   @click="selectLog(ev.id)"
                 >
                   <div class="flex items-center justify-between">
-                    <span class="font-bold text-white">{{ ev.triggerType }}</span>
+                    <span class="font-bold text-main">{{ ev.triggerType }}</span>
                     <span
-                      class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold"
-                      :class="ev.status === 'succeeded' ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/40' : 'bg-rose-950/60 text-rose-400 border border-rose-800/40'"
+                      class="px-2 py-0.5 rounded text-[10px] font-bold"
+                      :class="ev.status === 'succeeded' ? 'badge-success' : 'badge-error'"
                     >
                       {{ ev.status }}
                     </span>
                   </div>
-                  <div class="text-[11px] font-mono text-[#9ca3af]" dir="ltr">{{ ev.startedAt }}</div>
+                  <div class="text-[11px] font-mono muted-text" dir="ltr">{{ ev.startedAt }}</div>
                 </div>
               </div>
 
-              <!-- Executions Details -->
-              <div class="mint-card rounded-2xl bg-[#1f2224] border border-[#34393e] p-4 space-y-3 max-h-[480px] overflow-y-auto shadow-md">
-                <div class="text-xs font-bold text-white border-b border-[#32363b] pb-2 flex items-center justify-between">
-                  <span>تفاصيل تنفيذ الأوامر</span>
-                  <span v-if="selectedEventId" class="text-[11px] text-[#9ca3af] font-mono">حدث #{{ selectedEventId }}</span>
+              <!-- Executions Console (7 Cols) -->
+              <div class="lg:col-span-7 steam-box rounded-lg p-4 space-y-4 max-h-[500px] overflow-y-auto">
+                <div class="text-xs font-bold text-main border-b border-subtle pb-2 flex justify-between">
+                  <span>مخرجات الأوامر المنفذة</span>
+                  <span v-if="selectedEventId" class="font-mono accent-blue">حدث #{{ selectedEventId }}</span>
                 </div>
-                
-                <div v-if="executions.length === 0" class="text-xs text-[#9ca3af] py-6 text-center">
-                  اختر حدثاً من القائمة الجانبية لعرض تفاصيل ومخرجات الأوامر.
+
+                <div v-if="executions.length === 0" class="text-xs muted-text py-8 text-center">
+                  اختر حدثاً من القائمة الجانبية لعرض المخرجات.
                 </div>
-                
+
                 <div
                   v-for="ex in executions"
                   :key="ex.id"
-                  class="rounded-xl bg-[#141517] border border-[#2b2f33] p-3 text-xs space-y-2 font-mono shadow-inner"
+                  class="terminal-box rounded p-3 text-xs font-mono space-y-2 border border-subtle"
                   dir="ltr"
                 >
-                  <div class="text-[#60a5fa] font-bold">{{ ex.executable }} {{ ex.arguments }}</div>
-                  <div class="text-[11px] text-[#9ca3af]">
-                    status: <span class="text-white">{{ ex.status }}</span> | exit: {{ ex.exitCode }} | {{ ex.durationMs }}ms
+                  <div class="terminal-cmd font-bold">$ {{ ex.executable }} {{ ex.arguments }}</div>
+                  <div class="text-[11px] muted-text">
+                    status: <span class="text-main">{{ ex.status }}</span> | exit: {{ ex.exitCode }} | {{ ex.durationMs }}ms
                   </div>
-                  <pre v-if="ex.stdout" class="bg-[#0b0c0d] p-2.5 rounded-lg text-[11px] text-[#e2e8f0] overflow-x-auto border border-[#222528]">{{ ex.stdout }}</pre>
-                  <pre v-if="ex.stderr" class="bg-[#241013] p-2.5 rounded-lg text-[11px] text-[#fca5a5] overflow-x-auto border border-rose-900/30">{{ ex.stderr }}</pre>
+                  <pre v-if="ex.stdout" class="terminal-output p-2.5 rounded overflow-x-auto text-[11px]">{{ ex.stdout }}</pre>
+                  <pre v-if="ex.stderr" class="terminal-error p-2.5 rounded overflow-x-auto text-[11px]">{{ ex.stderr }}</pre>
                 </div>
               </div>
-
             </div>
           </div>
-        </template>
-
-      </div>
-    </main>
-
-    <!-- Bottom Statusbar (Mint Native Feel) -->
-    <footer class="shrink-0 px-6 py-2 border-t border-[#323639] bg-[#24272a] text-[11px] text-[#8fa0b0] flex items-center justify-between shadow-inner">
-      <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span>مجلد التهيئة النشط:</span>
-        <span class="font-mono text-[#cbd5e1] font-semibold" dir="ltr">{{ configDir || '~/.config/desktop-application-host' }}</span>
-      </div>
-      <div>نظام التشغيل: Linux Mint (Cinnamon Desktop)</div>
-    </footer>
-
+        </div>
+      </main>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.cinnamon-app {
-  font-family: -apple-system, BlinkMacSystemFont, "Ubuntu", "Segoe UI", "Tajawal", Roboto, sans-serif;
+/* Theme Variables & Transitions */
+.steam-client {
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #3e444a;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #525a62;
+/* DARK THEME (Steam Classic Client) */
+.dark-theme {
+  --bg-client: #171d25;
+  --bg-topbar: #171a21;
+  --bg-sidebar: #12161c;
+  --bg-main: #171d25;
+  --bg-box: #1b2838;
+  --bg-card: #212b36;
+  --bg-input: #0e141b;
+  --bg-terminal: #0e141b;
+  --border-color: #2e3c4d;
+  --text-main: #c6d4df;
+  --text-title: #ffffff;
+  --text-muted: #8091a2;
+  --accent-blue: #66c0f4;
+  --accent-green: #5c7e10;
+  --cmd-color: #a4d007;
 }
 
-/* Input Focus Glow */
-.mint-input:focus, .mint-select:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+/* LIGHT THEME (Steam Light / Modern Clean) */
+.light-theme {
+  --bg-client: #f1f5f9;
+  --bg-topbar: #ffffff;
+  --bg-sidebar: #f8fafc;
+  --bg-main: #f1f5f9;
+  --bg-box: #ffffff;
+  --bg-card: #f8fafc;
+  --bg-input: #ffffff;
+  --bg-terminal: #0f172a;
+  --border-color: #e2e8f0;
+  --text-main: #334155;
+  --text-title: #0f172a;
+  --text-muted: #64748b;
+  --accent-blue: #0284c7;
+  --accent-green: #16a34a;
+  --cmd-color: #4ade80;
+}
+
+/* Element Styles Based On Variables */
+.steam-top-bar {
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border-color);
+}
+.title-text { color: var(--text-title); }
+.muted-text { color: var(--text-muted); }
+.text-main { color: var(--text-main); }
+.accent-blue { color: var(--accent-blue); }
+
+.steam-sidebar {
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--border-color);
+}
+.profile-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+.sidebar-status {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.nav-idle {
+  color: var(--text-muted);
+}
+.nav-idle:hover {
+  background: var(--bg-card);
+  color: var(--text-title);
+}
+.nav-active {
+  background: var(--bg-card);
+  color: var(--accent-blue);
+  border-right: 3px solid var(--accent-blue);
+}
+
+.steam-main {
+  background: var(--bg-main);
+}
+.steam-box {
+  background: var(--bg-box);
+  border: 1px solid var(--border-color);
+}
+.rule-card {
+  background: var(--bg-card);
+}
+.step-item {
+  background: var(--bg-input);
+}
+.border-subtle {
+  border-color: var(--border-color);
+}
+
+.steam-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+.steam-input:focus {
+  border-color: var(--accent-blue);
+}
+.cmd-text {
+  color: var(--cmd-color);
+}
+
+.rule-badge {
+  background: rgba(102, 192, 244, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid rgba(102, 192, 244, 0.3);
+}
+
+.steam-btn-green {
+  background: linear-gradient(90deg, #5c7e10 0%, #75a017 100%);
+  box-shadow: 0 0 10px rgba(117, 160, 23, 0.25);
+}
+.steam-btn-green:hover {
+  background: linear-gradient(90deg, #6c9313 0%, #8bc01b 100%);
+}
+
+.steam-btn-secondary {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+.steam-btn-secondary:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.theme-switch-container {
+  background: var(--bg-card);
+}
+.theme-pill-idle {
+  color: var(--text-muted);
+}
+.theme-pill-idle:hover {
+  color: var(--text-title);
+}
+.theme-pill-active {
+  background: var(--bg-box);
+  color: var(--accent-blue);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Feedback Alert */
+.feedback-ok {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.feedback-err {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Terminal Console */
+.terminal-box {
+  background: var(--bg-terminal);
+}
+.terminal-cmd {
+  color: #4ade80;
+}
+.terminal-output {
+  background: rgba(0, 0, 0, 0.3);
+  color: #93c5fd;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.terminal-error {
+  background: rgba(153, 27, 27, 0.3);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Badges */
+.badge-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.badge-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.log-row:hover {
+  background: var(--bg-card);
+}
+.log-active {
+  background: var(--bg-card);
+  border-right: 3px solid var(--accent-blue);
 }
 </style>
