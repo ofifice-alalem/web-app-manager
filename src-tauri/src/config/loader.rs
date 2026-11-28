@@ -63,6 +63,9 @@ pub fn resolve_config_dir() -> Result<PathBuf, ConfigError> {
     #[cfg(not(target_os = "windows"))]
     {
         candidates.push(PathBuf::from("/etc").join(DEFAULT_APP_DIR_NAME));
+        if let Ok(home) = std::env::var("HOME") {
+            candidates.push(PathBuf::from(home).join(".config").join(DEFAULT_APP_DIR_NAME));
+        }
     }
 
     if cfg!(debug_assertions) {

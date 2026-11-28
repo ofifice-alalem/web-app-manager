@@ -72,11 +72,23 @@ fn resolve_shared_config_dir() -> Result<PathBuf, String> {
         if prod_dir.is_dir() {
             return Ok(prod_dir);
         }
+        if let Ok(home) = std::env::var("HOME") {
+            let user_dir = PathBuf::from(home).join(".config").join(HOST_APP_DIR_NAME);
+            if user_dir.is_dir() {
+                return Ok(user_dir);
+            }
+        }
     }
 
     for dev_candidate in [PathBuf::from("../config"), PathBuf::from("config")] {
         if dev_candidate.is_dir() {
-            return Ok(dev_candidate);
+            // If in AppImage, current dir might be inside the read-only squashfs mount.
+            // Check if directory is writable:
+            if let Ok(metadata) = dev_candidate.metadata() {
+                if !metadata.permissions().readonly() {
+                    return Ok(dev_candidate);
+                }
+            }
         }
     }
 
@@ -87,7 +99,13 @@ fn resolve_shared_config_dir() -> Result<PathBuf, String> {
             .join("config"));
     }
 
-    Ok(PathBuf::from("config"))
+    #[cfg(not(target_os = "windows"))]
+    {
+        if let Ok(home) = std::env::var("HOME") {
+            return Ok(PathBuf::from(home).join(".config").join(HOST_APP_DIR_NAME));
+        }
+        Ok(PathBuf::from("/etc").join(HOST_APP_DIR_NAME))
+    }
 }
 
 fn read_or_default(dir: &Path, filename: &str, default_json: &str) -> Result<String, String> {
