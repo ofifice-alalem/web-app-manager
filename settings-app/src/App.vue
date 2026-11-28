@@ -562,7 +562,7 @@ onMounted(() => {
                       </span>
                       <select
                         v-model="rule.errorKind"
-                        class="steam-input rounded px-3 py-1.5 text-xs font-bold focus:outline-none flex-1"
+                        class="steam-input steam-select rounded px-3 py-1.5 text-xs font-bold focus:outline-none flex-1"
                       >
                         <option value="connection_refused">توقف الخدمة / رفض الاتصال (Connection Refused)</option>
                         <option value="http_status">رمز استجابة ويب خاطئ (HTTP 500 / 502 / 503)</option>
@@ -813,12 +813,45 @@ onMounted(() => {
 }
 
 .steam-input {
-  background: var(--bg-input);
+  background-color: var(--bg-input) !important;
   border: 1px solid var(--border-color);
-  color: var(--text-main);
+  color: var(--text-main) !important;
+  color-scheme: dark;
+}
+.dark-theme .steam-input {
+  color-scheme: dark;
+  background-color: #0e141b !important;
+  color: #c6d4df !important;
+}
+.light-theme .steam-input {
+  color-scheme: light;
+  background-color: #ffffff !important;
+  color: #334155 !important;
 }
 .steam-input:focus {
   border-color: var(--accent-blue);
+}
+
+/* Custom Styled Select with Dark Background and Arrow */
+.steam-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2366c0f4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center;
+  background-size: 1rem;
+  padding-left: 2.25rem !important;
+  cursor: pointer;
+}
+.light-theme .steam-select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230284c7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+.steam-select option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  padding: 6px;
 }
 .cmd-text {
   color: var(--cmd-color);
